@@ -1,0 +1,263 @@
+esphome:
+  name: esp32-2432s028  # usa guiones en lugar de guiones bajos
+  friendly_name: Pantalla ESP32-2432S028
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Conexión WiFi
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  manual_ip:
+    static_ip: !secret static_ip
+    gateway: !secret gateway
+    subnet: !secret subnet
+  ap:
+    ssid: !secret ap_ssid
+    password: !secret ap_password
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Set OTA password
+ota:
+  platform: esphome
+
+captive_portal:
+
+# ============================================================ 
+# ESPHome Display related setup
+#
+# Create a font to use, add and remove glyphs as needed. 
+font:
+  - file: 'fonts/Arimo-Regular.ttf'
+    id: arimo48
+    size: 48
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ó/°.,:% €ÓÉí()|"
+  - file: 'fonts/Arimo-Regular.ttf'
+    id: arimo14
+    size: 14
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ó°/.,:% €ÓÉí()|"
+  - file: 'fonts/Arimo-Regular.ttf'
+    id: arimo12
+    size: 12
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ó°/.,:% €ÓÉí()|"
+  - file: 'fonts/Arimo-Regular.ttf'
+    id: arimo10
+    size: 10
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ó°/.,:% €ÓÉí()|"
+
+# Create colors
+color:
+  - id: white
+    hex: ffffff
+  - id: ha_blue
+    hex: 51c0f2
+  - id: green
+    hex: 00ff00
+  - id: red
+    hex: ff0000
+  - id: orange
+    hex: ffa500
+  - id: blue
+    hex: 0000ff
+  - id: gray
+    hex: 808080
+  - id: light_gray
+    hex: c0c0c0
+  - id: dark_gray
+    hex: 404040
+
+# ============================================================ 
+# Home Assistant related setup
+#
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    name: Display Backlight
+    id: backlight
+    restore_mode: ALWAYS_ON
+
+# ============================================================ 
+# Hardware related setup
+#
+# Setup SPI for the display. The ESP32-2432S028R uses separate SPI buses for display and touch
+spi:
+  - id: tft
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin: GPIO12
+  - id: touch
+    clk_pin: GPIO25
+    mosi_pin: GPIO32
+    miso_pin: GPIO39
+
+# Setup a pin to control the backlight
+output:
+  - platform: ledc
+    pin: GPIO21
+    id: backlight_pwm
+
+sensor:
+  # Sensores existentes
+  - platform: homeassistant
+    id: voltatge_oregon
+    entity_id: sensor.mitjana_mobil_voltatge_bateria
+    internal: true
+  - platform: homeassistant
+    id: consum_casa
+    entity_id: sensor.total_casa_aa_active_power
+    internal: true
+  - platform: homeassistant
+    id: temp_menjador
+    entity_id: sensor.menjador_temperature_humidity_sensor_temperatura
+    internal: true
+  - platform: homeassistant
+    id: hum_menjador
+    entity_id: sensor.menjador_temperature_humidity_sensor_humitat
+    internal: true
+  - platform: homeassistant
+    id: st_menjador
+    entity_id: sensor.sensacion_termica_salon
+    internal: true        
+  - platform: homeassistant
+    id: temp_despatx
+    entity_id: sensor.t_h_sensor_temperatura
+    internal: true
+  - platform: homeassistant
+    id: hum_despatx
+    entity_id: sensor.t_h_sensor_humitat
+    internal: true
+  - platform: homeassistant
+    id: st_despatx
+    entity_id: sensor.sensacion_termica_interior_despatx
+    internal: true
+  
+  # Nuevos sensores para precios y consumos
+  - platform: homeassistant
+    id: preu_actual
+    entity_id: sensor.esios_pvpc
+    internal: true
+  - platform: homeassistant
+    id: preu_mitja_dia
+    entity_id: input_number.preu_mitja_del_dia
+    internal: true
+  - platform: homeassistant
+    id: consum_valle
+    entity_id: sensor.acumulador_casa_franges_horari_valle
+    internal: true
+  - platform: homeassistant
+    id: consum_punta
+    entity_id: sensor.acumulador_casa_franges_horari_punta
+    internal: true
+  - platform: homeassistant
+    id: consum_llano
+    entity_id: sensor.acumulador_casa_franges_horari_llano
+    internal: true
+
+display:
+  - platform: ili9xxx
+    model: ili9342
+    color_palette: 8BIT
+    spi_id: tft
+    cs_pin: GPIO15
+    dc_pin: GPIO2
+    invert_colors: false
+    rotation: 180
+    lambda: |-
+      it.fill(id(Color::BLACK));
+      
+      // Título principal
+      it.printf(160, 2, id(arimo14), TextAlign::TOP_CENTER, "CONSUMO ELÉCTRICO");
+      
+      // Precio actual destacado
+      it.printf(160, 18, id(arimo12), id(ha_blue), TextAlign::TOP_CENTER, "Precio actual: %.3f €/kWh", id(preu_actual).state);
+      it.printf(160, 32, id(arimo10), id(gray), TextAlign::TOP_CENTER, "Media del día: %.3f €/kWh", id(preu_mitja_dia).state);
+      
+      // Línea separadora
+      it.line(10, 48, 310, 48, id(gray));
+      
+      // Configuración del gráfico de barras
+      int bar_width = 65;
+      int bar_max_height = 70;
+      int bar_y_base = 125;
+      int bar_spacing = 85;
+      
+      // Encontrar el máximo para escalar las barras
+      float max_consum = 0;
+      if (id(consum_valle).state > max_consum && id(consum_valle).state > 0) max_consum = id(consum_valle).state;
+      if (id(consum_llano).state > max_consum && id(consum_llano).state > 0) max_consum = id(consum_llano).state;
+      if (id(consum_punta).state > max_consum && id(consum_punta).state > 0) max_consum = id(consum_punta).state;
+      
+      // Dibujar ejes del gráfico
+      it.line(15, bar_y_base, 305, bar_y_base, id(white));  // Eje X
+      it.line(15, bar_y_base, 15, bar_y_base - bar_max_height - 5, id(white));  // Eje Y
+      
+      // Etiqueta del eje Y
+      it.printf(5, bar_y_base - bar_max_height/2, id(arimo10), TextAlign::CENTER_LEFT, "kWh");
+      
+      if (max_consum > 0) {
+        // Barra Valle (verde)
+        int valle_height = (id(consum_valle).state / max_consum) * bar_max_height;
+        int valle_x = 25;
+        
+        // Dibujar barra con borde
+        it.filled_rectangle(valle_x, bar_y_base - valle_height, bar_width, valle_height, id(green));
+        it.rectangle(valle_x, bar_y_base - valle_height, bar_width, valle_height, id(white));
+        
+        // Etiquetas
+        it.printf(valle_x + bar_width/2, bar_y_base + 5, id(arimo12), TextAlign::TOP_CENTER, "Valle");
+        it.printf(valle_x + bar_width/2, bar_y_base + 18, id(arimo10), TextAlign::TOP_CENTER, "%.2f kWh", id(consum_valle).state);
+        
+        // Barra Llano (naranja)
+        int llano_height = (id(consum_llano).state / max_consum) * bar_max_height;
+        int llano_x = valle_x + bar_spacing;
+        
+        it.filled_rectangle(llano_x, bar_y_base - llano_height, bar_width, llano_height, id(orange));
+        it.rectangle(llano_x, bar_y_base - llano_height, bar_width, llano_height, id(white));
+        
+        it.printf(llano_x + bar_width/2, bar_y_base + 5, id(arimo12), TextAlign::TOP_CENTER, "Llano");
+        it.printf(llano_x + bar_width/2, bar_y_base + 18, id(arimo10), TextAlign::TOP_CENTER, "%.2f kWh", id(consum_llano).state);
+        
+        // Barra Punta (rojo)
+        int punta_height = (id(consum_punta).state / max_consum) * bar_max_height;
+        int punta_x = llano_x + bar_spacing;
+        
+        it.filled_rectangle(punta_x, bar_y_base - punta_height, bar_width, punta_height, id(red));
+        it.rectangle(punta_x, bar_y_base - punta_height, bar_width, punta_height, id(white));
+        
+        it.printf(punta_x + bar_width/2, bar_y_base + 5, id(arimo12), TextAlign::TOP_CENTER, "Punta");
+        it.printf(punta_x + bar_width/2, bar_y_base + 18, id(arimo10), TextAlign::TOP_CENTER, "%.2f kWh", id(consum_punta).state);
+        
+        // Líneas de referencia horizontales
+        for (int i = 1; i <= 4; i++) {
+          int y = bar_y_base - (i * bar_max_height / 4);
+          it.line(15, y, 20, y, id(gray));
+          float valor = (max_consum * i) / 4;
+          it.printf(12, y, id(arimo10), TextAlign::CENTER_RIGHT, "%.1f", valor);
+        }
+      } else {
+        // Mensaje si no hay datos
+        it.printf(160, bar_y_base - bar_max_height/2, id(arimo12), TextAlign::CENTER, "Sin datos de consumo");
+      }
+      
+      // Línea separadora inferior
+      it.line(10, 165, 310, 165, id(gray));
+      
+      // Información adicional compactada
+      it.printf(5, 170, id(arimo10), TextAlign::TOP_LEFT, "Consum casa: %.0f W | Voltatge Oregon: %.2f V", id(consum_casa).state, id(voltatge_oregon).state);
+      it.printf(5, 185, id(arimo10), TextAlign::TOP_LEFT, "Menjador: %.1f°C/%.0f%% (ST: %.1f°C)", id(temp_menjador).state, id(hum_menjador).state, id(st_menjador).state);
+      it.printf(5, 200, id(arimo10), TextAlign::TOP_LEFT, "Despatx: %.1f°C/%.0f%% (ST: %.1f°C)", id(temp_despatx).state, id(hum_despatx).state, id(st_despatx).state);
+      
+      // Timestamp o indicador de actualización
+      it.printf(315, 220, id(arimo10), TextAlign::BOTTOM_RIGHT, "Actualizado");
+
+substitutions:
+  device_name: yellowtft1
+  friendly_name: Yellow TFT 1

@@ -1,0 +1,425 @@
+
+esphome:
+  name: esp32-2432s028
+  friendly_name: Pantalla ESP32-2432S028
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Conexión WiFi
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  manual_ip:
+    static_ip: !secret static_ip
+    gateway: !secret gateway
+    subnet: !secret subnet
+  ap:
+    ssid: !secret ap_ssid
+    password: !secret ap_password
+
+logger:
+api:
+ota:
+  platform: esphome
+captive_portal:
+
+# Time component
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+# Fonts
+font:
+  - file: 'fonts/Arimo-Regular.ttf'
+    id: arimo12
+    size: 14
+    glyphs: "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ÁÉÍÓÚÑáéíóúñ¿¡üÜ€←↑→↓° "
+  - file: 'fonts/Arimo-Regular.ttf'
+    id: arimo10
+    size: 14
+    glyphs: "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ÁÉÍÓÚÑáéíóúñ¿¡üÜ€←↑→↓° "
+
+  - file: 'fonts/Arimo-Regular.ttf'
+    id: arimo8
+    size: 14
+    glyphs: "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ÁÉÍÓÚÑáéíóúñ¿¡üÜ€←↑→↓° "
+
+# Colors
+color:
+  - id: white
+    hex: ffffff
+  - id: ha_blue
+    hex: 51c0f2
+  - id: green
+    hex: 00ff00
+  - id: red
+    hex: ff0000
+  - id: orangeeeeeeer
+    hex: ffa500
+  - id: gray
+    hex: 808080
+  - id: yellow
+    hex: ffff00
+
+# Hardware
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    name: Display Backlight
+    id: backlight
+    restore_mode: ALWAYS_ON
+
+spi:
+  - id: tft
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin: GPIO12
+
+output:
+  - platform: ledc
+    pin: GPIO21
+    id: backlight_pwm
+
+
+sensor:
+  # Precio actual
+  - platform: homeassistant
+    id: precio_actual
+    entity_id: sensor.esios_pvpc
+    internal: true
+    
+  # Precios por hora usando atributos directamente
+  - platform: homeassistant
+    id: precio_00h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_00h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_01h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_01h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_02h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_02h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_03h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_03h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_04h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_04h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_05h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_05h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_06h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_06h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_07h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_07h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_08h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_08h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_09h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_09h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_10h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_10h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_11h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_11h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_12h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_12h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_13h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_13h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_14h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_14h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_15h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_15h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_16h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_16h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_17h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_17h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_18h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_18h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_19h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_19h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_20h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_20h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_21h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_21h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_22h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_22h"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_23h
+    entity_id: sensor.esios_pvpc
+    attribute: "price_23h"
+    internal: true
+    
+  # Min/Max info usando atributos
+  - platform: homeassistant
+    id: precio_min
+    entity_id: sensor.esios_pvpc
+    attribute: "min_price"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_max
+    entity_id: sensor.esios_pvpc
+    attribute: "max_price"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_min_at
+    entity_id: sensor.esios_pvpc
+    attribute: "min_price_at"
+    internal: true
+    
+  - platform: homeassistant
+    id: precio_max_at
+    entity_id: sensor.esios_pvpc
+    attribute: "max_price_at"
+    internal: true
+
+display:
+  - platform: ili9xxx
+    model: ili9342
+    color_palette: 8BIT
+    spi_id: tft
+    cs_pin: GPIO15
+    dc_pin: GPIO2
+    invert_colors: false
+    rotation: 180
+    lambda: |-
+      it.fill(id(Color::BLACK));
+      
+      // Obtener hora actual
+      auto time = id(homeassistant_time).now();
+      int current_hour = time.hour;
+      
+      // Título
+      it.printf(160, 2, id(arimo12), TextAlign::TOP_CENTER, "PRECIO ELECTRICIDAD PVPC");
+      
+      // Info actual
+      it.printf(80, 16, id(arimo10), id(ha_blue), TextAlign::TOP_CENTER, "AHORA: %.3f €", id(precio_actual).state);
+      it.printf(240, 16, id(arimo10), id(yellow), TextAlign::TOP_CENTER, "%02d:%02d", time.hour, time.minute);
+      
+      // Configuración del gráfico
+      int chart_x = 45;
+      int chart_y = 50;  // Movido más abajo para hacer espacio al debug
+      int chart_width = 270;
+      int chart_height = 80;  // Reducido para hacer espacio
+      int chart_bottom = chart_y + chart_height;
+      
+      // Crear array de precios con verificación
+      float prices[24];
+      int valid_prices = 0;
+      
+      // Lista de IDs de sensores - AJUSTA ESTOS NOMBRES A TUS ENTIDADES REALES
+      // Opción 1: Si tienes sensores individuales por hora
+      Sensor *price_sensors[24] = {
+        id(precio_00h), id(precio_01h), id(precio_02h), id(precio_03h),
+        id(precio_04h), id(precio_05h), id(precio_06h), id(precio_07h),
+        id(precio_08h), id(precio_09h), id(precio_10h), id(precio_11h),
+        id(precio_12h), id(precio_13h), id(precio_14h), id(precio_15h),
+        id(precio_16h), id(precio_17h), id(precio_18h), id(precio_19h),
+        id(precio_20h), id(precio_21h), id(precio_22h), id(precio_23h)
+      };
+      
+      for (int i = 0; i < 24; i++) {
+        if (price_sensors[i] != nullptr && price_sensors[i]->has_state()) {
+          prices[i] = price_sensors[i]->state;
+          if (!isnan(prices[i]) && prices[i] > 0) {
+            valid_prices++;
+          }
+        } else {
+          prices[i] = NAN;
+        }
+      }
+
+      // Obtener min y max de los precios válidos
+      float min_price = NAN;
+      float max_price = NAN;
+      
+      if (valid_prices > 0) {
+        min_price = 999999;
+        max_price = -999999;
+        
+        for (int i = 0; i < 24; i++) {
+          if (!isnan(prices[i]) && prices[i] > 0) {
+            if (prices[i] < min_price) min_price = prices[i];
+            if (prices[i] > max_price) max_price = prices[i];
+          }
+        }
+      }
+      
+      float price_range = max_price - min_price;
+      
+      
+      // Dibujar ejes
+      it.line(chart_x, chart_bottom, chart_x + chart_width, chart_bottom, id(white));
+      it.line(chart_x, chart_y, chart_x, chart_bottom, id(white));
+      
+      // Verificar si tenemos datos válidos
+      if (valid_prices < 2) {
+        it.printf(160, 90, id(arimo10), id(red), TextAlign::CENTER, "DATOS INSUFICIENTES (%d/24)", valid_prices);
+        it.printf(160, 105, id(arimo8), id(red), TextAlign::CENTER, "Verifica configuración de sensores");
+      } else if (isnan(price_range) || price_range <= 0) {
+        it.printf(160, 90, id(arimo10), id(red), TextAlign::CENTER, "RANGO DE PRECIOS INVÁLIDO");
+      } else {
+        // Dibujar gráfico
+        for (int hour = 0; hour < 23; hour++) {
+          if (!isnan(prices[hour]) && !isnan(prices[hour + 1])) {
+            int x1 = chart_x + (hour * chart_width / 24);
+            int y1 = chart_bottom - ((prices[hour] - min_price) / price_range) * chart_height;
+            int x2 = chart_x + ((hour + 1) * chart_width / 24);
+            int y2 = chart_bottom - ((prices[hour + 1] - min_price) / price_range) * chart_height;
+            
+            // Verificar que las coordenadas estén dentro del área válida
+            if (y1 >= chart_y && y1 <= chart_bottom && y2 >= chart_y && y2 <= chart_bottom) {
+              it.line(x1, y1, x2, y2, id(ha_blue));
+            }
+          }
+        }
+        
+        // Puntos en el gráfico
+        for (int hour = 0; hour < 24; hour++) {
+          if (!isnan(prices[hour])) {
+            int x = chart_x + (hour * chart_width / 24);
+            int y = chart_bottom - ((prices[hour] - min_price) / price_range) * chart_height;
+            
+            if (y >= chart_y && y <= chart_bottom) {
+              if (hour == current_hour) {
+                it.filled_circle(x, y, 3, id(red));
+                it.circle(x, y, 5, id(red));
+              } else {
+                it.filled_circle(x, y, 2, id(ha_blue));
+              }
+            }
+          }
+        }
+        
+        // Línea vertical de hora actual
+        int current_x = chart_x + (current_hour * chart_width / 24);
+        it.line(current_x, chart_y, current_x, chart_bottom, id(red));
+        
+        // Etiquetas de hora
+        for (int h = 0; h < 24; h += 6) {
+          int x = chart_x + (h * chart_width / 24);
+          it.printf(x, chart_bottom + 3, id(arimo8), TextAlign::TOP_CENTER, "%02d", h);
+        }
+        
+        // Etiquetas de precio
+        it.printf(chart_x - 3, chart_bottom, id(arimo8), TextAlign::CENTER_RIGHT, "%.3f", min_price);
+        it.printf(chart_x - 3, chart_y, id(arimo8), TextAlign::CENTER_RIGHT, "%.3f", max_price);
+      }
+      
+      // Información adicional
+      it.line(10, 165, 310, 165, id(gray));
+      it.printf(5, 170, id(arimo8), TextAlign::TOP_LEFT, "Min: %.3f € | Max: %.3f €", min_price, max_price);
+      
+      // Información de estado
+      it.printf(5, 185, id(arimo8), id(gray), TextAlign::TOP_LEFT, "Última actualización: %02d:%02d", 
+                time.hour, time.minute);
+      
+      // Indicador de tendencia para la próxima hora
+      if (current_hour < 23 && !isnan(prices[current_hour]) && !isnan(prices[current_hour + 1])) {
+        float next_price = prices[current_hour + 1];
+        float current_price = prices[current_hour];
+        const char* trend = "";
+        Color trend_color = id(white);
+        
+        if (next_price > current_price) {
+          trend = "^ Subida";
+          trend_color = id(red);
+        } else if (next_price < current_price) {
+          trend = "v Bajada";
+          trend_color = id(green);
+        } else {
+          trend = "- Igual";
+          trend_color = id(yellow);
+        }
+        
+        it.printf(160, 200, id(arimo8), trend_color, TextAlign::TOP_CENTER, 
+                  "Próxima hora: %.3f € %s", next_price, trend);
+      }
