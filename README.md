@@ -8,14 +8,15 @@ Este repositorio contiene varios proyectos de visualización para ESP32 con pant
 **Reloj digital, sensores y meteorología**  
 Muestra la hora, fecha, día de la semana y año en catalán, junto con temperatura y humedad interior/exterior. Incluye iconos dinámicos según el estado meteorológico de Met.no y control de brillo del backlight.
 
-![Gráfica de Consumos](rellotge_temps/rellotge_temps.jpg)
+<img src="rellotge_temps/rellotge_temps.jpg" alt="Gráfica de Rellotge_temps" width="400"/>
+
 ---
 
 ### 2. `consums_franges/`
 **Gráfica de consumos eléctricos por franjas horarias**  
 Visualiza en tiempo real los consumos eléctricos por franjas (valle, llano, punta), junto con datos ambientales y voltaje de batería.
 
-![Gráfica de Consumos](consums_franges/consums_franges.jpg)
+<img src="consums_franges/consums_franges.jpg" alt="Gráfica de Consumos" width="400"/>
 
 ---
 
@@ -23,7 +24,7 @@ Visualiza en tiempo real los consumos eléctricos por franjas (valle, llano, pun
 **Gráfica de precios PVPC**  
 Muestra los precios de la electricidad PVPC por hora, con gráfica de barras, precio medio diario e indicadores visuales de franjas.
 
-![Gráfica de Precios](preus_grafica/preus_grafica.jpg)
+<img src="preus_grafica/preus_grafica.jpg" alt="Gráfica de Precios" width="400"/>
 
 ---
 
