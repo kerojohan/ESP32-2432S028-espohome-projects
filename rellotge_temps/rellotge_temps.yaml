@@ -1,0 +1,229 @@
+# Configuración de pantalla horizontal
+# Muestra hora, fecha, día de la semana y valores de sensores
+
+esphome:
+  name: esp32-2432s028
+  friendly_name: Pantalla ESP32-2432S028
+  on_boot:
+    then:
+      - light.turn_on:
+          id: screen_backlight
+          brightness: 1%
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Hardware related setup
+spi:
+  - id: tft
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin: GPIO12
+
+output:
+  - platform: ledc
+    pin: GPIO21
+    id: backlight_pwm
+    frequency: 5000 Hz
+    inverted: true
+
+display:
+  - platform: ili9xxx
+    model: ili9342
+    color_palette: 8BIT
+    spi_id: tft
+    cs_pin: GPIO15
+    dc_pin: GPIO2
+    reset_pin: GPIO4
+    invert_colors: false
+    rotation: 180
+    lambda: |-
+      // Fons negre
+      it.fill(id(negre));
+
+      // Rellotge digital gran centrat (blanc)
+      auto now = id(my_time).now();
+      it.printf(it.get_width() / 2, 50, id(font_digital_gran), id(blanc), TextAlign::CENTER, "%02d:%02d:%02d", now.hour, now.minute, now.second);
+
+      // Dia i mes (mes en lletres) más pequeño
+      const char* mesos[12] = {"gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"};
+      const char* dies[7] = {"diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"};
+      char data_mes[32];
+      snprintf(data_mes, sizeof(data_mes), "%02d %s", now.day_of_month, mesos[now.month - 1]);
+      it.printf(it.get_width() / 2, 100, id(font_digital_petit), id(blanc), TextAlign::CENTER, "%s", data_mes);
+      // Día de la semana y año juntos, centrados, en gris
+      char dia_any[32];
+      snprintf(dia_any, sizeof(dia_any), "%s %04d", dies[now.day_of_week], now.year);
+      it.printf(it.get_width() / 2, 125, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", dia_any);
+
+      // Zona inferior: sensores con iconos BMP
+      int x_esq = 60;
+      int y_temp = 200;
+      int y_hum = 230;
+      // Icono izquierda (casa)
+      it.image(x_esq-16, y_temp-50, id(icono_interior));
+      char temp_esq[16];
+      snprintf(temp_esq, sizeof(temp_esq), "%.1fC", id(t_h_sensor_temperatura).state);
+      it.printf(x_esq, y_temp, id(font_digital), id(blanc), TextAlign::CENTER, "%s", temp_esq);
+      char hum_esq[8];
+      snprintf(hum_esq, sizeof(hum_esq), "%.0f%%", id(t_h_sensor_humitat).state);
+      it.printf(x_esq, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_esq);
+      // Icono derecha (meteorología)
+      int x_dret = it.get_width() - 60;
+      std::string cond = id(metno_condition).state;
+      if (cond == "sunny") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_sunny));
+      } else if (cond == "partlycloudy") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_partlycloudy));
+      } else if (cond == "cloudy") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_cloudy));
+      } else if (cond == "rainy") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_rainy));
+      } else if (cond == "pouring") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_pouring));
+      } else if (cond == "lightning") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_lightning));
+      } else if (cond == "lightning-rainy") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_lightning_rainy));
+      } else if (cond == "snowy") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_snowy));
+      } else if (cond == "snowy-rainy") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_snowy_rainy));
+      } else if (cond == "windy") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_windy));
+      } else if (cond == "fog") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_fog));
+      } else if (cond == "hail") {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_hail));
+      } else {
+        it.image(x_dret-16, y_temp-50, id(icono_exterior_cloudy)); // icono por defecto
+      }
+      // Valores de temperatura y humedad exterior
+      char temp_dret[16];
+      snprintf(temp_dret, sizeof(temp_dret), "%.1fC", id(bth01_9e69_temperature).state);
+      it.printf(x_dret, y_temp, id(font_digital), id(blanc), TextAlign::CENTER, "%s", temp_dret);
+      char hum_dret[8];
+      snprintf(hum_dret, sizeof(hum_dret), "%.0f%%", id(bth01_9e69_humidity).state);
+      it.printf(x_dret, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_dret);
+
+# Ejemplo de sensores (ajustar según hardware real)
+sensor:
+  - platform: homeassistant
+    id: t_h_sensor_temperatura
+    entity_id: sensor.t_h_sensor_temperatura
+  - platform: homeassistant
+    id: t_h_sensor_humitat
+    entity_id: sensor.t_h_sensor_humitat
+  - platform: homeassistant
+    id: bth01_9e69_temperature
+    entity_id: sensor.bth01_9e69_temperature
+  - platform: homeassistant
+    id: bth01_9e69_humidity
+    entity_id: sensor.bth01_9e69_humidity
+
+# Reloj de tiempo real
+time:
+  - platform: sntp
+    id: my_time
+    timezone: Europe/Madrid
+
+# Incluir fuentes
+font:
+  - file: "fonts/DS-DIGIT.TTF"
+    id: font_digital
+    size: 48
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:./-% "
+  - file: "fonts/DS-DIGIT.TTF"
+    id: font_digital_gran
+    size: 64
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:./-% "
+  - file: "fonts/DS-DIGIT.TTF"
+    id: font_digital_petit
+    size: 28
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:./-% "
+
+# Colores
+color:
+  - id: blanc
+    hex: 'ffffff'
+  - id: negre
+    hex: '000000'
+  - id: gris
+    hex: '808080'
+  - id: vermell
+    hex: 'ff0000'
+
+logger:
+api:
+
+image:
+  - file: "icons/interior.bmp"
+    id: icono_interior
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_sunny.bmp"
+    id: icono_exterior_sunny
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_partlycloudy.bmp"
+    id: icono_exterior_partlycloudy
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_cloudy.bmp"
+    id: icono_exterior_cloudy
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_rainy.bmp"
+    id: icono_exterior_rainy
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_pouring.bmp"
+    id: icono_exterior_pouring
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_lightning.bmp"
+    id: icono_exterior_lightning
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_lightning_rainy.bmp"
+    id: icono_exterior_lightning_rainy
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_snowy.bmp"
+    id: icono_exterior_snowy
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_snowy_rainy.bmp"
+    id: icono_exterior_snowy_rainy
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_windy.bmp"
+    id: icono_exterior_windy
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_fog.bmp"
+    id: icono_exterior_fog
+    type: RGB
+    resize: 32x32
+  - file: "icons/exterior_hail.bmp"
+    id: icono_exterior_hail
+    type: RGB
+    resize: 32x32
+
+text_sensor:
+  - platform: homeassistant
+    id: metno_condition
+    entity_id: weather.metno
+    attribute: condition
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    name: "Pantalla Backlight"
+    id: screen_backlight
+    restore_mode: ALWAYS_ON 

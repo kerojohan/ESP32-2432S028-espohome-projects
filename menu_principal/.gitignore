@@ -1,0 +1,21 @@
+# Archivos de credenciales
+secrets.yaml
+
+# Archivos de compilación ESPHome
+*.bin
+*.elf
+*.map
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.bak
+
+# Archivos de configuración local
+config.local.yaml
+
+# Directorios de build
+.pio/
+.esphome/ 

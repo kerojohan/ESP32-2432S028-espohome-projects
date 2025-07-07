@@ -1,0 +1,267 @@
+esphome:
+  name: esp32-2432s028
+  friendly_name: Pantalla ESP32-2432S028
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Conexión WiFi
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  manual_ip:
+    static_ip: !secret static_ip
+    gateway: !secret gateway
+    subnet: !secret subnet
+  ap:
+    ssid: !secret ap_ssid
+    password: !secret ap_password
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Set OTA password
+ota:
+  platform: esphome
+
+captive_portal:
+
+# Variables globales para controlar la navegación
+globals:
+  - id: current_screen
+    type: int
+    restore_value: no
+    initial_value: '0'  # 0 = pantalla principal, 1 = pantalla info
+
+# Setup a pin to control the backlight
+output:
+  - platform: ledc
+    pin: GPIO21
+    id: backlight_pwm
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    name: Display Backlight
+    id: backlight
+    restore_mode: ALWAYS_ON
+
+# Setup SPI for the display
+spi:
+  - id: tft
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin: GPIO12
+  - id: touch
+    clk_pin: GPIO25
+    mosi_pin: GPIO32
+    miso_pin: GPIO39
+
+touchscreen:
+  platform: xpt2046
+  spi_id: touch
+  cs_pin: GPIO33
+  interrupt_pin: GPIO36
+  update_interval: 100ms
+  threshold: 600
+  calibration:
+    x_min: 554
+    x_max: 3588
+    y_min: 408
+    y_max: 3573
+  transform:
+    swap_xy: false
+  on_touch:
+    - lambda: |-
+        // Adaptar coordenadas para rotación 180°
+        int x = 319 - touch.x;
+        int y = 239 - touch.y;
+        int screen = id(current_screen);
+        
+        if (screen == 0) {
+          // PANTALLA PRINCIPAL - Botones de navegación
+          // Botón "Precios" (zona superior izquierda)
+          if (x >= 10 && x <= 150 && y >= 50 && y <= 90) {
+            ESP_LOGI("TOUCH", "Botón Precios presionado - Coordenadas: x=%d, y=%d", x, y);
+            id(current_screen) = 1;
+          }
+          // Botón "Consumos" (zona superior derecha)
+          else if (x >= 170 && x <= 310 && y >= 50 && y <= 90) {
+            ESP_LOGI("TOUCH", "Botón Consumos presionado - Coordenadas: x=%d, y=%d", x, y);
+            id(current_screen) = 2;
+          }
+          // Botón "Info" (zona inferior izquierda)
+          else if (x >= 10 && x <= 150 && y >= 150 && y <= 190) {
+            ESP_LOGI("TOUCH", "Botón Info presionado - Coordenadas: x=%d, y=%d", x, y);
+            id(current_screen) = 3;
+          }
+          // Zona donde estaba "Volver" (inferior derecha) - para depuración
+          else if (x >= 170 && x <= 310 && y >= 150 && y <= 190) {
+            ESP_LOGI("TOUCH", "ZONA VOLVER presionada - Coordenadas: x=%d, y=%d", x, y);
+            ESP_LOGI("TOUCH", "Esta zona debería estar vacía ahora");
+          }
+          ESP_LOGI("TOUCH", "Coordenadas: x=%d, y=%d, x_raw=%d, y_raw=%d", x, y, touch.x_raw, touch.y_raw);
+        }
+        else if (screen == 1) {
+          // PANTALLA PRECIOS - Botón volver
+          if (x >= 10 && x <= 150 && y >= 200 && y <= 240) {
+            ESP_LOGI("TOUCH", "Volver a menú principal desde Precios");
+            id(current_screen) = 0;
+          }
+        }
+        else if (screen == 2) {
+          // PANTALLA CONSUMOS - Botón volver
+          if (x >= 10 && x <= 150 && y >= 200 && y <= 240) {
+            ESP_LOGI("TOUCH", "Volver a menú principal desde Consumos");
+            id(current_screen) = 0;
+          }
+        }
+        else if (screen == 3) {
+          // PANTALLA INFO - Botón volver
+          if (x >= 10 && x <= 150 && y >= 200 && y <= 240) {
+            ESP_LOGI("TOUCH", "Volver a menú principal desde Info");
+            id(current_screen) = 0;
+          }
+        }
+
+# Fuentes
+font:
+  - file: "fonts/arial.ttf"
+    id: title_font
+    size: 20
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;!?()[]{}<>-_=+@#$%&* "
+  - file: "fonts/arial.ttf"
+    id: normal_font
+    size: 16
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;!?()[]{}<>-_=+@#$%&* "
+  - file: "fonts/arial.ttf"
+    id: button_font
+    size: 14
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;!?()[]{}<>-_=+@#$%&* "
+
+# Colores
+color:
+  - id: black
+    hex: '000000'
+  - id: white
+    hex: 'ffffff'
+  - id: blue
+    hex: '51c0f2'
+  - id: green
+    hex: '00ff00'
+  - id: red
+    hex: 'ff0000'
+  - id: orange
+    hex: 'ffa500'
+  - id: grey
+    hex: '808080'
+  - id: dark_grey
+    hex: '404040'
+  - id: yellow
+    hex: 'ffff00'
+  - id: purple
+    hex: '800080'
+
+# Display principal
+display:
+  - platform: ili9xxx
+    model: ili9342
+    color_palette: 8BIT
+    spi_id: tft
+    cs_pin: GPIO15
+    dc_pin: GPIO2
+    invert_colors: false
+    rotation: 180
+    update_interval: 2s
+
+    lambda: |-
+      int screen = id(current_screen);
+      
+      if (screen == 0) {
+        // PANTALLA PRINCIPAL (320x240 vertical)
+        it.fill(id(black));
+        
+        // Título
+        it.print(160, 20, id(title_font), id(white), TextAlign::CENTER, "MENU PRINCIPAL");
+        
+        // Botón "Precios" (superior izquierda) - Zona de touch: x=10-150, y=50-90
+        it.rectangle(10, 50, 140, 40, id(blue));
+        it.print(80, 70, id(button_font), id(white), TextAlign::CENTER, "PRECIOS");
+        // Indicador de zona de touch (cuadrado relleno amarillo)
+        it.filled_rectangle(10, 50, 140, 40, id(yellow));
+        it.print(80, 70, id(button_font), id(black), TextAlign::CENTER, "PRECIOS");
+        
+        // Botón "Consumos" (superior derecha) - Zona de touch: x=170-310, y=50-90
+        it.rectangle(170, 50, 140, 40, id(green));
+        it.print(240, 70, id(button_font), id(white), TextAlign::CENTER, "CONSUMOS");
+        // Indicador de zona de touch (cuadrado relleno púrpura)
+        it.filled_rectangle(170, 50, 140, 40, id(purple));
+        it.print(240, 70, id(button_font), id(white), TextAlign::CENTER, "CONSUMOS");
+        
+        // Botón "Info" (inferior izquierda) - Zona de touch: x=10-150, y=150-190
+        it.rectangle(10, 150, 140, 40, id(orange));
+        it.print(80, 170, id(button_font), id(white), TextAlign::CENTER, "INFO");
+        // Indicador de zona de touch (cuadrado relleno amarillo)
+        it.filled_rectangle(10, 150, 140, 40, id(yellow));
+        it.print(80, 170, id(button_font), id(black), TextAlign::CENTER, "INFO");
+        
+        // Zona donde estaba "Volver" (inferior derecha) - para depuración
+        it.rectangle(170, 150, 140, 40, id(red));
+        it.print(240, 170, id(button_font), id(white), TextAlign::CENTER, "ZONA VACIA");
+        // Indicador de zona de touch (cuadrado relleno rojo)
+        it.filled_rectangle(170, 150, 140, 40, id(red));
+        it.print(240, 170, id(button_font), id(white), TextAlign::CENTER, "ZONA VACIA");
+        
+        // Información de calibración
+        it.print(160, 220, id(normal_font), id(grey), TextAlign::CENTER, "Touch calibrado");
+        
+      } else if (screen == 1) {
+        // PANTALLA PRECIOS
+        it.fill(id(black));
+        it.print(160, 20, id(title_font), id(white), TextAlign::CENTER, "PRECIOS PVPC");
+        it.print(160, 50, id(normal_font), id(white), TextAlign::CENTER, "Pantalla de precios");
+        it.print(160, 80, id(normal_font), id(white), TextAlign::CENTER, "de electricidad");
+        
+        // Botón volver - Zona de touch: x=10-150, y=200-240
+        it.rectangle(10, 200, 140, 40, id(red));
+        it.print(80, 220, id(button_font), id(white), TextAlign::CENTER, "VOLVER");
+        // Indicador de zona de touch (cuadrado relleno amarillo)
+        it.filled_rectangle(10, 200, 140, 40, id(yellow));
+        it.print(80, 220, id(button_font), id(black), TextAlign::CENTER, "VOLVER");
+        
+      } else if (screen == 2) {
+        // PANTALLA CONSUMOS
+        it.fill(id(black));
+        it.print(160, 20, id(title_font), id(white), TextAlign::CENTER, "CONSUMOS");
+        it.print(160, 50, id(normal_font), id(white), TextAlign::CENTER, "Pantalla de consumos");
+        it.print(160, 80, id(normal_font), id(white), TextAlign::CENTER, "por franjas");
+        
+        // Botón volver - Zona de touch: x=10-150, y=200-240
+        it.rectangle(10, 200, 140, 40, id(red));
+        it.print(80, 220, id(button_font), id(white), TextAlign::CENTER, "VOLVER");
+        // Indicador de zona de touch (cuadrado relleno púrpura)
+        it.filled_rectangle(10, 200, 140, 40, id(purple));
+        it.print(80, 220, id(button_font), id(white), TextAlign::CENTER, "VOLVER");
+        
+      } else if (screen == 3) {
+        // PANTALLA INFO
+        it.fill(id(black));
+        it.print(160, 20, id(title_font), id(white), TextAlign::CENTER, "INFORMACION");
+        it.print(160, 50, id(normal_font), id(white), TextAlign::CENTER, "ESP32-2432S028");
+        it.print(160, 80, id(normal_font), id(white), TextAlign::CENTER, "Pantalla TFT ILI9342");
+        it.print(160, 110, id(normal_font), id(white), TextAlign::CENTER, "Touch XPT2046");
+        
+        // Botón volver - Zona de touch: x=10-150, y=200-240
+        it.rectangle(10, 200, 140, 40, id(red));
+        it.print(80, 220, id(button_font), id(white), TextAlign::CENTER, "VOLVER");
+        // Indicador de zona de touch (cuadrado relleno amarillo)
+        it.filled_rectangle(10, 200, 140, 40, id(yellow));
+        it.print(80, 220, id(button_font), id(black), TextAlign::CENTER, "VOLVER");
+      }
+
+# La pantalla se actualiza automáticamente cada segundo por defecto 
