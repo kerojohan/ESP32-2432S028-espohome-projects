@@ -6,9 +6,9 @@ esphome:
   friendly_name: Pantalla ESP32-2432S028
   on_boot:
     then:
-      - light.turn_on:
-          id: screen_backlight
-          brightness: 1%
+      - output.set_level:
+          id: backlight_pwm
+          level: 0.01
 esp32:
   board: esp32dev
   framework:
@@ -52,7 +52,7 @@ display:
 
       // Dia i mes (mes en lletres) más pequeño
       const char* mesos[12] = {"gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"};
-      const char* dies[7] = {"diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"};
+      const char* dies[7] = {"dissabte","diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres"};
       char data_mes[32];
       snprintf(data_mes, sizeof(data_mes), "%02d %s", now.day_of_month, mesos[now.month - 1]);
       it.printf(it.get_width() / 2, 100, id(font_digital_petit), id(blanc), TextAlign::CENTER, "%s", data_mes);
@@ -218,12 +218,4 @@ image:
 text_sensor:
   - platform: homeassistant
     id: metno_condition
-    entity_id: weather.metno
-    attribute: condition
-
-light:
-  - platform: monochromatic
-    output: backlight_pwm
-    name: "Pantalla Backlight"
-    id: screen_backlight
-    restore_mode: ALWAYS_ON 
+    entity_id: weather.forecast_home 
