@@ -2,8 +2,8 @@
 # Muestra hora, fecha, día de la semana y valores de sensores
 
 esphome:
-  name: esp32-2432s028
-  friendly_name: Pantalla ESP32-2432S028
+  name: esp32-rellotge
+  friendly_name: Rellotge Temperatura ESP32
   on_boot:
     then:
       - output.set_level:
@@ -52,13 +52,13 @@ display:
 
       // Dia i mes (mes en lletres) más pequeño
       const char* mesos[12] = {"gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"};
-      const char* dies[7] = {"dissabte","diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres"};
+      const char* dies[7] = {"diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"};
       char data_mes[32];
       snprintf(data_mes, sizeof(data_mes), "%02d %s", now.day_of_month, mesos[now.month - 1]);
       it.printf(it.get_width() / 2, 100, id(font_digital_petit), id(blanc), TextAlign::CENTER, "%s", data_mes);
       // Día de la semana y año juntos, centrados, en gris
       char dia_any[32];
-      snprintf(dia_any, sizeof(dia_any), "%s %04d", dies[now.day_of_week], now.year);
+      snprintf(dia_any, sizeof(dia_any), "%s %04d", dies[(now.day_of_week - 1) % 7], now.year);
       it.printf(it.get_width() / 2, 125, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", dia_any);
 
       // Zona inferior: sensores con iconos BMP
