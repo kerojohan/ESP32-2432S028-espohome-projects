@@ -41,7 +41,7 @@ display:
     dc_pin: GPIO2
     reset_pin: GPIO4
     invert_colors: false
-    rotation: 0
+    rotation: 180
     lambda: |-
       // Fons negre
       it.fill(id(negre));
@@ -68,10 +68,10 @@ display:
       // Icono izquierda (casa)
       it.image(x_esq-16, y_temp-50, id(icono_interior));
       char temp_esq[16];
-      snprintf(temp_esq, sizeof(temp_esq), "%.1fC", id(temperatura_interior_local).state);
+      snprintf(temp_esq, sizeof(temp_esq), "%.1fC", id(t_h_sensor_temperatura).state);
       it.printf(x_esq, y_temp, id(font_digital), id(blanc), TextAlign::CENTER, "%s", temp_esq);
       char hum_esq[8];
-      snprintf(hum_esq, sizeof(hum_esq), "%.0f%%", id(humitat_interior_local).state);
+      snprintf(hum_esq, sizeof(hum_esq), "%.0f%%", id(t_h_sensor_humitat).state);
       it.printf(x_esq, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_esq);
       // Icono derecha (meteorología)
       int x_dret = it.get_width() - 60;
@@ -111,29 +111,14 @@ display:
       snprintf(hum_dret, sizeof(hum_dret), "%.0f%%", id(bth01_9e69_humidity).state);
       it.printf(x_dret, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_dret);
 
-# Sensores de temperatura y humedad
+# Ejemplo de sensores (ajustar según hardware real)
 sensor:
-  # Sensor local DHT22 conectado al GPIO22
-  - platform: dht
-    pin: GPIO22
-    model: DHT22
-    temperature:
-      name: "Temperatura Interior Local"
-      id: temperatura_interior_local
-      filters:
-        - median:
-            window_size: 5
-            send_every: 5
-    humidity:
-      name: "Humedad Interior Local"
-      id: humitat_interior_local
-      filters:
-        - median:
-            window_size: 5
-            send_every: 5
-    update_interval: 30s
-  
-  # Sensores externos de Home Assistant
+  - platform: homeassistant
+    id: t_h_sensor_temperatura
+    entity_id: sensor.t_h_sensor_temperatura
+  - platform: homeassistant
+    id: t_h_sensor_humitat
+    entity_id: sensor.t_h_sensor_humitat
   - platform: homeassistant
     id: bth01_9e69_temperature
     entity_id: sensor.bth01_9e69_temperature
