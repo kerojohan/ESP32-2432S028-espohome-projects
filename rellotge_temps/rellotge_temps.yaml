@@ -41,7 +41,7 @@ display:
     dc_pin: GPIO2
     reset_pin: GPIO4
     invert_colors: false
-    rotation: 180
+    rotation: 0
     lambda: |-
       // Fons negre
       it.fill(id(negre));
@@ -65,7 +65,6 @@ display:
       int x_esq = 60;
       int y_temp = 200;
       int y_hum = 230;
-      int y_press = 260;
       // Icono izquierda (casa)
       it.image(x_esq-16, y_temp-50, id(icono_interior));
       char temp_esq[16];
@@ -74,10 +73,6 @@ display:
       char hum_esq[8];
       snprintf(hum_esq, sizeof(hum_esq), "%.0f%%", id(humitat_interior_local).state);
       it.printf(x_esq, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_esq);
-      // Presión atmosférica
-      char press_esq[12];
-      snprintf(press_esq, sizeof(press_esq), "%.0fhPa", id(pressio_atmosferica).state);
-      it.printf(x_esq, y_press, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", press_esq);
       // Icono derecha (meteorología)
       int x_dret = it.get_width() - 60;
       std::string cond = id(metno_condition).state;
@@ -116,20 +111,12 @@ display:
       snprintf(hum_dret, sizeof(hum_dret), "%.0f%%", id(bth01_9e69_humidity).state);
       it.printf(x_dret, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_dret);
 
-# Configuración I2C para sensores AHT20 + BMP280
-i2c:
-  sda: GPIO22
-  scl: GPIO27
-  scan: true
-  id: bus_a
-
-
-
-# Sensores de temperatura, humedad y presión
+# Sensores de temperatura y humedad
 sensor:
-  # Sensor AHT20 (temperatura y humedad)
-  - platform: aht10
-    address: 0x38
+  # Sensor local DHT22 conectado al GPIO22
+  - platform: dht
+    pin: GPIO22
+    model: DHT22
     temperature:
       name: "Temperatura Interior Local"
       id: temperatura_interior_local
@@ -145,22 +132,6 @@ sensor:
             window_size: 5
             send_every: 5
     update_interval: 30s
-
-  # Sensor BMP280 (presión atmosférica)
-  - platform: bmp280_i2c
-    address: 0x77
-    pressure:
-      name: "Presión Atmosférica"
-      id: pressio_atmosferica
-      unit_of_measurement: hPa
-      accuracy_decimals: 1
-      filters:
-        - median:
-            window_size: 5
-            send_every: 5
-    update_interval: 30s
-
-
   
   # Sensores externos de Home Assistant
   - platform: homeassistant
