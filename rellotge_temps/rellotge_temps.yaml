@@ -68,10 +68,10 @@ display:
       // Icono izquierda (casa)
       it.image(x_esq-16, y_temp-50, id(icono_interior));
       char temp_esq[16];
-      snprintf(temp_esq, sizeof(temp_esq), "%.1fC", id(t_h_sensor_temperatura).state);
+      snprintf(temp_esq, sizeof(temp_esq), "%.1fC", id(despatx_wifi_temperature_humidity_sensor_temperatura).state);
       it.printf(x_esq, y_temp, id(font_digital), id(blanc), TextAlign::CENTER, "%s", temp_esq);
       char hum_esq[8];
-      snprintf(hum_esq, sizeof(hum_esq), "%.0f%%", id(t_h_sensor_humitat).state);
+      snprintf(hum_esq, sizeof(hum_esq), "%.0f%%", id(despatx_wifi_temperature_humidity_sensor_humitat).state);
       it.printf(x_esq, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_esq);
       // Icono derecha (meteorología)
       int x_dret = it.get_width() - 60;
@@ -105,32 +105,33 @@ display:
       }
       // Valores de temperatura y humedad exterior
       char temp_dret[16];
-      snprintf(temp_dret, sizeof(temp_dret), "%.1fC", id(bth01_9e69_temperature).state);
+      snprintf(temp_dret, sizeof(temp_dret), "%.1fC", id(estacion_oregon_temperatura).state);
       it.printf(x_dret, y_temp, id(font_digital), id(blanc), TextAlign::CENTER, "%s", temp_dret);
       char hum_dret[8];
-      snprintf(hum_dret, sizeof(hum_dret), "%.0f%%", id(bth01_9e69_humidity).state);
+      snprintf(hum_dret, sizeof(hum_dret), "%.0f%%", id(estacion_oregon_humedad).state);
       it.printf(x_dret, y_hum, id(font_digital_petit), id(gris), TextAlign::CENTER, "%s", hum_dret);
 
-# Ejemplo de sensores (ajustar según hardware real)
-sensor:
-  - platform: homeassistant
-    id: t_h_sensor_temperatura
-    entity_id: sensor.t_h_sensor_temperatura
-  - platform: homeassistant
-    id: t_h_sensor_humitat
-    entity_id: sensor.t_h_sensor_humitat
-  - platform: homeassistant
-    id: bth01_9e69_temperature
-    entity_id: sensor.bth01_9e69_temperature
-  - platform: homeassistant
-    id: bth01_9e69_humidity
-    entity_id: sensor.bth01_9e69_humidity
 
 # Reloj de tiempo real
 time:
   - platform: sntp
     id: my_time
     timezone: Europe/Madrid
+
+# Sensores externos de Home Assistant
+sensor:
+  - platform: homeassistant
+    id: despatx_wifi_temperature_humidity_sensor_temperatura
+    entity_id: sensor.despatx_wifi_temperature_humidity_sensor_temperatura
+  - platform: homeassistant
+    id: despatx_wifi_temperature_humidity_sensor_humitat
+    entity_id: sensor.despatx_wifi_temperature_humidity_sensor_humitat
+  - platform: homeassistant
+    id: estacion_oregon_temperatura
+    entity_id: sensor.bth01_9e69_temperature
+  - platform: homeassistant
+    id: estacion_oregon_humedad
+    entity_id: sensor.bth01_9e69_humidity
 
 # Incluir fuentes
 font:
