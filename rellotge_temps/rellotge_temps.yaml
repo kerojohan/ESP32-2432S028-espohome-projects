@@ -123,15 +123,23 @@ sensor:
   - platform: homeassistant
     id: despatx_wifi_temperature_humidity_sensor_temperatura
     entity_id: sensor.despatx_wifi_temperature_humidity_sensor_temperatura
+    filters:
+      - throttle: 60s
   - platform: homeassistant
     id: despatx_wifi_temperature_humidity_sensor_humitat
     entity_id: sensor.despatx_wifi_temperature_humidity_sensor_humitat
+    filters:
+      - throttle: 60s
   - platform: homeassistant
     id: estacion_oregon_temperatura
     entity_id: sensor.bth01_9e69_temperature
+    filters:
+      - throttle: 60s
   - platform: homeassistant
     id: estacion_oregon_humedad
     entity_id: sensor.bth01_9e69_humidity
+    filters:
+      - throttle: 60s
 
 # Incluir fuentes
 font:
